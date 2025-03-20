@@ -1,2 +1,4 @@
 # dumaresq
-My efforts to emulate the fire control computers of yesteryear.
+My efforts to emulate the fire control computers of yesteryear. The image I have in mind for the final product is something almost gamelike, almost in the vein of edutainment or the sort of simulations you might find operating in museums? We'll see if my coding skills are sufficient for that, but even if not, I hope to create a series of tools that can give hard, accurate numbers about the performance of naval weaponry.
+
+Ideally, I can create something that is adaptable to a wide range of warships, but as I get the initial kinks worked out, I'm assuming that our ship is the USS Pennsylvania, 'Old Falling Apart'. She's the sister to the ill-fated Arizona at Pearl Harbor, and while I could go on at length about her, I'll point you to my major resource during this early part of the research: https://eugeneleeslover.com/ This site has an incredible amount of information about fire control and naval history, including calculated range tables. My end goal here is simulation, but I may also consider turning these tables into functions of their own, for comparison and general curiosity. 
