@@ -3,10 +3,13 @@ import numpy
 import scipy
 #Start with getting own data. Heading starts at north
 print('Own speed (knots):')
-ov = int(input())
+ov = float(input())
 print('Own heading (degrees from north):')
-oh = (90- int(input()))* numpy.pi/180
-#Split into north and east speed values, negative will be west and south. But i need to figure out how it translates from degrees from north. 
+oho = numpy.radians(float(input()))
+oh = (90 - oho) % 360
+#This particular part has caused me no shortage of headscratching and
+#general confusion. This is my note to be absolutely positive about
+#angles before doing anything in the future. Coordinate systems, kids.
 onv = numpy.sin(oh)*ov
 oev = numpy.cos(oh)*ov
 aonv = round(numpy.abs(onv),2)
@@ -32,9 +35,9 @@ print("Your ship is " + ons + " & " + oes + ".")
 #I should make the enemy rangefinding a callable function, early speed determinatiom was basically this done over and over again. (can i add a notepad?)
 def enemyrange():
     print("What is your estimate of enemy distance (kilometers)?")
-    er = int(input())
+    er = float(input())
     print("What is enemy angle off the bow (degrees)?")
-    eh = int(input())
+    eh = float(input())
     #Note: put loop here or something, to give user multiple chances?
     print("Port (left) or starboard (right)? Answer 'P' or 'S'.")
     ps = input()
@@ -77,21 +80,60 @@ edata = enemyrange()
 ecoord = [numpy.sin(edata[1])*edata[0],numpy.cos(edata[1])*edata[0],edata[1]]
 ear2 = numpy.array([tim,round(float(ecoord[0]),2),round(float(ecoord[1]),2),float(ecoord[2])])
 ear = numpy.vstack([ear,ear2])
-print(ear)
+#print(ear)
 #Next should be getting speed. Should start with taking data from the bottommost two rows of the set (for most recent speed). But we also need enemy heading
 #We want range rate and bearing rate. Might be best to do two, actually? Degrees per minute and knots. Either way, range rate will require speed in knots in bearing based coordinate system
 recent = ear[-2:,:]
-tdiff = float(ear[1,0])-float(ear[0,0])
-xdiff = float(ear[1,1])-float(ear[0,1])
-ydiff = float(ear[1,2])-float(ear[0,2])
-hdiff = float(ear[1,3])-float(ear[0,3])
+tdiff = float(recent[1,0])-float(recent[0,0])
+xdiff = float(recent[1,1])-float(recent[0,1])
+ydiff = float(recent[1,2])-float(recent[0,2])
+hdiff = float(recent[1,3])-float(recent[0,3])
 #hdiff for heading. Still in radians, eww.
 xsp = xdiff/tdiff
 ysp = ydiff/tdiff
 hsp = numpy.degrees(hdiff/tdiff)
-#Now we change the coordinate system. Yay.
+#Now we change the coordinate system. Yay. To remind myself: it is
+#based on the line between us and enemy ship at time of second
+#observation. It is our previously found heading plus degrees from
+#east, which is what my current coordinate system is. 
 th = oh + float(ear[1,3])
+#print("Test, theta is" + str(th))
+#Comment above out once I've got this theta thing licked
+
 #th is shorter than theta, I'll be typing it a lot
 rot = numpy.array([[numpy.cos(th),-numpy.sin(th)],[numpy.sin(th),numpy.cos(th)]])
 speed = numpy.array([[xsp],[ysp]])
-newspeed = numpy.multiply(rot,speed)
+newspeed = numpy.dot(rot,speed)
+#Before really putting this to bed, I could put the stuff above into strings.
+#Realized that trying to fit all the math inside the string portion
+#got big and quite clunky. Moving it out. ns for new speed, ks knot speed.
+nsx = 1000*round(float(numpy.squeeze(newspeed[0])),)
+nsy = 1000*round(float(numpy.squeeze(newspeed[1])),4)
+ksx = abs(nsx * 1.94384)
+ksy = abs(nsy * 1.94384)
+#Each of these can be given a similar treatment to the east/west portion above.
+ansx = abs(nsx)
+ansy = abs(nsy)
+ahsp = abs(hsp)
+if nsx > 0:
+    rr = str(ansx) + " meters per second or " + str(ksx) + "knots away from you"
+elif nsx < 0:
+    rr = str(ansx) + " meters per second or " + str(ksx) + "knots toward you"
+else:
+    rr = "zero"
+
+if nsx > 0:
+    br = str(ansx) + " meters per second or " + str(ksx) + "knots port, "
+elif nsx < 0:
+    br = str(ansx) + " meters per second or " + str(ksx) + "knots starboard, "
+else:
+    br = "zero knots, "
+#degs for degree string
+if hsp > 0:
+    degs = str(ahsp) + "degrees per second clockwise"
+elif hsp < 0:
+    degs = str(ahsp) + "degrees per second counterclockwise"
+else:
+    degs = "zero degrees per second"
+
+print("Enemy range rate is " +  rr  + " and bearing rate is " + br + degs + ".")
