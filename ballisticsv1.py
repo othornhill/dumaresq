@@ -27,7 +27,7 @@ while goodin == 0:
     print('What is your gun elevation, in degrees?')
     el = input()
     try:
-        el = int(el)
+        el = float(el)
     except:
         print('Please input a number.')
     else:
@@ -42,7 +42,7 @@ while goodin2 == 0:
     print('What is your gun traverse, in degrees, negative being counterclockwise?')
     tra = input()
     try:
-        tra = int(tra)
+        tra = float(tra)
     except:
         print('Please input a number.')
     else:
